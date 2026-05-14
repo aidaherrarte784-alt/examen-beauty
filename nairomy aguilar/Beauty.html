@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boutique de Lujo | Maquillaje</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #2b231f; color: #e3d5ca; margin: 0; font-family: 'Georgia', serif; }
+        
+        .navbar { background: #1a1512; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #d4a373; }
+        .logo-luxury { font-size: 2.5rem; color: #d4a373; margin-bottom: 10px; text-decoration: none; display: block; }
+
+        .brand-header { width: 100%; text-align: center; color: #d4a373; padding: 40px 0 10px; text-transform: uppercase; letter-spacing: 4px; }
+
+        .container-fluid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 20px; padding: 20px; max-width: 1300px; margin: auto;
+        }
+        
+        .product-card { border: 1px solid #4a3f35; background: #352f2a; border-radius: 4px; overflow: hidden; transition: 0.3s; }
+        .product-card:hover { border-color: #d4a373; transform: translateY(-5px); }
+        
+       
+        .img-box { 
+            height: 250px; 
+            background: #e3d5ca; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            overflow: hidden;
+        }
+        .img-box img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+        }
+        
+        .details { padding: 15px; }
+        .price { color: #d4a373; font-size: 1.5rem; font-weight: bold; }
+        .desc { font-size: 0.85rem; font-family: sans-serif; color: #c6ac8f; height: 40px; }
+
+        .btn-gold { background: #d4a373; border: none; color: #1a1512; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-gold:hover { background: #e3d5ca; }
+
+        .cart-status {
+            position: fixed; bottom: 20px; right: 20px; background: #d4a373; color: #1a1512;
+            padding: 15px 25px; border-radius: 50px; font-weight: bold; cursor: pointer; z-index: 1001;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); border: 2px solid #1a1512;
+        }
+
+        .payment-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 2000; justify-content: center; align-items: center;
+        }
+        .payment-card {
+            background: #352f2a; padding: 30px; border-radius: 8px; width: 90%; max-width: 400px;
+            border: 1px solid #d4a373; color: #e3d5ca;
+        }
+        .payment-card input {
+            width: 100%; padding: 12px; margin: 10px 0; background: #1a1512; border: 1px solid #4a3f35; color: white; border-radius: 4px; box-sizing: border-box;
+        }
+
+        .info-section { background: #1a1512; padding: 50px 10%; margin-top: 40px; border-top: 2px solid #d4a373; }
+        .insta-link { color: #d4a373; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="#" class="logo-luxury">Moonlight Beauty</a>
+        <p>WhatsApp: 3909-3399 | <a href="https://www.instagram.com/mooling_beauty?igsh=MTF1dG03bmg5OG4wMg==" target="_blank" class="insta-link"><i class="fab fa-instagram"></i> @mooling_beauty</a></p>
+    </div>
+
+    <h2 class="brand-header">Colección Sheglam</h2>
+    <div class="container-fluid" id="sheglam-area"></div>
+
+    <div class="cart-status" onclick="abrirPago()">
+        <i class="fas fa-shopping-bag"></i> <span id="cart-qty">0</span> Items | Q<span id="cart-total">0.00</span>
+    </div>
+
+    <div class="payment-modal" id="modal-pago">
+        <div class="payment-card">
+            <h3 style="text-align: center; color: #d4a373;">Check-out de Lujo</h3>
+            <p id="monto-final" style="text-align: center; font-size: 1.2rem; margin-bottom: 20px;"></p>
+            <label><i class="far fa-credit-card"></i> Datos de Tarjeta</label>
+            <input type="text" placeholder="Número de Tarjeta (16 dígitos)" maxlength="16">
+            <div style="display: flex; gap: 10px;">
+                <input type="text" placeholder="MM/AA" maxlength="5">
+                <input type="text" placeholder="CVV" maxlength="3">
+            </div>
+            <label><i class="far fa-user"></i> Titular</label>
+            <input type="text" placeholder="Nombre completo">
+            <button class="btn-gold" onclick="procesarPago()">CONFIRMAR PAGO</button>@
+            <button class="btn-gold" onclick="cerrarPago()" style="background: transparent; color: #d4a373; border: 1px solid #d4a373; margin-top: 10px;">SEGUIR COMPRANDO</button>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <h2>Experiencia Moonlight</h2>
+        <p>Enviamos a toda Guatemala. Pagos 100% cifrados y seguros.</p>
+        <hr style="border: 0.5px solid #4a3f35; margin: 20px 0;">
+        <p><b>Ubicación:</b> Pradera Concepción, Local 14</p>
+        <p><b>Métodos:</b> Tarjeta de Crédito, Débito y Pago contra entrega.</p>
+    </div>
+
+    <script>
+        let total = 0;
+        let cantidad = 0;
+
+        const productosSheglam = [
+            { nombre: "Colorete Líquido Color Bloom", precio: 65, imagen: "https://img.ltwebstatic.com/images3_pi/2024/05/29/b2/17169505641d77f8a0f16e9352e7cbb51351e5524c.jpg" },
+            { nombre: "Contorno en Stick Sun Sculpt", precio: 75, imagen: "https://img.ltwebstatic.com/images3_pi/2024/09/02/04/17252704321b0be443046cbc6334725a9920c70891.jpg" },
+            { nombre: "Base de Maquillaje Complexion Pro", precio: 85, imagen: "https://img.ltwebstatic.com/v4/j/pi/2026/04/13/ec/17760707153190306d199e4dde8801dcd032c5c835.jpg" },
+            { nombre: "Labial Líquido Mate Allure", precio: 95, imagen: "https://img.ltwebstatic.com/v4/j/pi/2026/03/25/e8/1774411671348ff800ceb3c0bc20d4e4241fa8d9fc.jpg" },
+            { nombre: "Paleta de Sombras Golden", precio: 105, imagen: "https://img.ltwebstatic.com/v4/j/pi/2025/05/21/f3/17478108733996305fdb6332602033c9f734840463.jpg" },
+            { nombre: "Bálsamo Labial con Color", precio: 115, imagen: "https://img.ltwebstatic.com/images3_pi/2024/07/30/17/17223242883055b43c02cb11dc1808dfe342a307f6.jpg" },
+            { nombre: "Polvos Traslúcidos Insta-Ready", precio: 125, imagen: "https://img.ltwebstatic.com/images3_pi/2023/02/20/167688773636b8d7d3d807f6ed7ca623d23b26eea5.jpg" },
+            { nombre: "Delineador Dual End", precio: 135, imagen: "https://img.ltwebstatic.com/images3_pi/2024/06/26/8b/1719404804683b2e3ccc39ea29317efe84585e44c6.jpg" },
+            { nombre: "Mascara 2-en-1 Waterproof", precio: 145, imagen: "https://img.ltwebstatic.com/images3_pi/2024/11/04/4b/1730699889528656197d979a70ab0a4e5914e5b1bd.jpg" },
+            { nombre: "Aceite Labial Jelly Wow", precio: 155, imagen: "https://img.ltwebstatic.com/images3_pi/2024/09/29/cd/17276058999896c689ae3cddac25f7d278eb7c78e2.jpg" },
+            { nombre: "Corrector de Alta Cobertura", precio: 165, imagen: "https://img.ltwebstatic.com/images3_pi/2024/05/28/1e/1716889281e7c42b35d8a6932393143c44fcf7b519.jpg" },
+            { nombre: "Spray Fijador Glow", precio: 175, imagen: "https://img.ltwebstatic.com/images3_pi/2025/03/17/84/174219668255a27569a7f2181ce675bc77c93383d1.jpg" }
+        ];
+
+        function comprar(nombre, precio) {
+            total += precio;
+            cantidad++;
+            document.getElementById('cart-qty').innerText = cantidad;
+            document.getElementById('cart-total').innerText = total.toFixed(2);
+            alert(`"${nombre}" añadido a tu bolsa.`);
+        }
+
+        function abrirPago() {
+            if(total === 0) return alert("Añade productos primero.");
+            document.getElementById('monto-final').innerText = "Total a Pagar: Q" + total.toFixed(2);
+            document.getElementById('modal-pago').style.display = 'flex';
+        }
+
+        function cerrarPago() {
+            document.getElementById('modal-pago').style.display = 'none';
+        }
+
+        function procesarPago() {
+            alert("Validando tarjeta con el banco...");
+            alert("¡Transacción Exitosa! Su pedido Moonlight Beauty está en camino.");
+            total = 0; cantidad = 0;
+            document.getElementById('cart-qty').innerText = "0";
+            document.getElementById('cart-total').innerText = "0.00";
+            cerrarPago();
+        }
+
+        const sheglamContainer = document.getElementById('sheglam-area');
+        
+        productosSheglam.forEach(prod => {
+            const imgHtml = prod.imagen ? `<img src="${prod.imagen}" alt="${prod.nombre}">` : `<span style="color:#2b231f">${prod.nombre}</span>`;
+            
+            sheglamContainer.innerHTML += `
+                <div class="product-card">
+                    <div class="img-box">
+                        ${imgHtml}
+                    </div>
+                    <div class="details">
+                        <p class="price">Q${prod.precio}.00</p>
+                        <h3>${prod.nombre}</h3>
+                        <p class="desc">Tendencia mundial de Sheglam Pro.</p>
+                        <button class="btn-gold" onclick="comprar('${prod.nombre}', ${prod.precio})">AÑADIR A BOLSA</button>
+                    </div>
+                </div>`;
+        });
+    </script>
+</body>
+</html>
